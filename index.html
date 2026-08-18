@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fighter Matchup</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            margin-bottom: 25px;
+            color: #ffffff;
+            font-size: 2rem;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            justify-content: space-between;
+        }
+
+        .player-card {
+            flex: 1;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .player-card h3 {
+            color: #aaaaaa;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .avatar-preview {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #333;
+            border: 2px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            font-size: 2.2rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .avatar-preview:hover {
+            transform: scale(1.05);
+            border-color: #007bff;
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-hint {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: -6px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #181818;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            text-align: center;
+        }
+
+        input[type="text"]:focus {
+            border-color: #007bff;
+        }
+
+        button.btn-fight {
+            background-color: #e50914;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.1s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button.btn-fight:hover {
+            background-color: #ff121d;
+        }
+
+        button.btn-fight:active {
+            transform: scale(0.98);
+        }
+
+        /* Loading Spinner */
+        .loader {
+            display: none;
+            margin: 20px auto;
+            border: 4px solid #333;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Arena Container */
+        .result-container {
+            display: none;
+            position: relative;
+            margin-top: 25px;
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+
+        .result-container img.bg-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Confetti Overlay Canvas */
+        #confetti-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        /* Base class for face overlays */
+        .head-overlay {
+            position: absolute;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+
+        .head-overlay img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        /* -------------------------------------------------------------
+           STAGE 1: CHOKE SCENE OVERLAYS
+           ------------------------------------------------------------- */
+        .choke-winner {
+            top: 20%;
+            left: 5.5%;
+            width: 28%;
+            height: 27%;
+            transform: rotate(-28deg);
+        }
+
+        .choke-loser {
+            top: 41%;
+            left: 13.5%;
+            width: 29%;
+            height: 26%;
+            transform: rotate(-18deg);
+        }
+
+        /* -------------------------------------------------------------
+           STAGE 2: DECISION 1 OVERLAYS (Referee Holding Hands)
+           ------------------------------------------------------------- */
+        .dec1-winner {
+            top: 16%;
+            left: 12.5%;
+            width: 13%;
+            height: 18%;
+            transform: rotate(0deg);
+        }
+
+        .dec1-loser {
+            top: 20%;
+            left: 82%;
+            width: 12%;
+            height: 16%;
+            transform: rotate(-2deg);
+        }
+
+        /* -------------------------------------------------------------
+           STAGE 3: DECISION 2 OVERLAYS (Winner Hand Raised)
+           ------------------------------------------------------------- */
+        /* Winner (Moved a little down and a little left) */
+        .dec2-winner {
+            top: 26%;
+            left: 16.5%;
+            width: 14%;
+            height: 19%;
+            transform: rotate(4deg);
+            animation: winnerGlow 1.5s infinite alternate;
+        }
+
+        /* Loser */
+        .dec2-loser {
+            top: 33%;
+            left: 86.5%;
+            width: 12.5%;
+            height: 17%;
+            transform: rotate(-38deg);
+        }
+
+        /* Winner Pulse Glow Effect on Decision 2 */
+        @keyframes winnerGlow {
+            0% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
+            100% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.9); }
+        }
+
+        .winner-announcement {
+            margin-top: 15px;
+            font-size: 1.3rem;
+            color: #00ff88;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .status-timer {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #aaaaaa;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>AI MATCHUP ARENA</h1>
+
+    <div class="input-group">
+        <!-- Fighter 1 -->
+        <div class="player-card">
+            <h3>Fighter 1</h3>
+            <div class="avatar-preview" id="p1-avatar-box" onclick="triggerFileInput(1)">
+                <span id="p1-icon-disp">🥷</span>
+            </div>
+            <span class="upload-hint">Click avatar to upload photo</span>
+            <input type="file" id="p1-file" accept="image/*" onchange="handleImageUpload(1, event)">
+            <input type="text" id="p1-name" placeholder="Enter Name 1">
+        </div>
+
+        <!-- Fighter 2 -->
+        <div class="player-card">
+            <h3>Fighter 2</h3>
+            <div class="avatar-preview" id="p2-avatar-box" onclick="triggerFileInput(2)">
+                <span id="p2-icon-disp">🥊</span>
+            </div>
+            <span class="upload-hint">Click avatar to upload photo</span>
+            <input type="file" id="p2-file" accept="image/*" onchange="handleImageUpload(2, event)">
+            <input type="text" id="p2-name" placeholder="Enter Name 2">
+        </div>
+    </div>
+
+    <button class="btn-fight" onclick="startFight()">Simulate Fight</button>
+    
+    <div class="loader" id="loader"></div>
+
+    <!-- Arena Display Area -->
+    <div class="result-container" id="result-container">
+        <img src="images/choke.png" id="bg-scene" alt="Fight Stage" class="bg-image">
+
+        <!-- Dynamic Winner Overlay -->
+        <div class="head-overlay" id="winner-head"></div>
+
+        <!-- Dynamic Loser Overlay -->
+        <div class="head-overlay" id="loser-head"></div>
+
+        <!-- Confetti Canvas -->
+        <canvas id="confetti-canvas"></canvas>
+    </div>
+
+    <div class="winner-announcement" id="winner-announcement"></div>
+    <div class="status-timer" id="status-timer"></div>
+</div>
+
+<script>
+    let p1ImageData = null;
+    let p2ImageData = null;
+    let sequenceTimeouts = [];
+    let confettiAnimationId = null;
+
+    function triggerFileInput(player) {
+        document.getElementById(`p${player}-file`).click();
+    }
+
+    function handleImageUpload(player, event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgData = e.target.result;
+                if (player === 1) p1ImageData = imgData;
+                else p2ImageData = imgData;
+
+                const avatarBox = document.getElementById(`p${player}-avatar-box`);
+                avatarBox.innerHTML = `<img src="${imgData}" alt="P${player}">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    /* AI Decision Engine */
+    function aiPickWinner(name1, name2) {
+        const analyze = (str) => {
+            let score = 0;
+            for (let i = 0; i < str.length; i++) {
+                score += str.charCodeAt(i);
+            }
+            return score;
+        };
+
+        const score1 = analyze(name1.trim().toLowerCase());
+        const score2 = analyze(name2.trim().toLowerCase());
+
+        if (score1 === score2) {
+            return name1.length >= name2.length ? 1 : 2;
+        }
+        return score1 > score2 ? 1 : 2;
+    }
+
+    function playSound(soundPath) {
+        const audio = new Audio(soundPath);
+        audio.play().catch(err => {
+            console.warn(`Audio '${soundPath}' blocked or missing:`, err);
+        });
+    }
+
+    function renderFaceHTML(imgData) {
+        if (imgData) {
+            return `<img src="${imgData}" alt="Fighter Face">`;
+        }
+        return `<div style="font-size:2rem; background:#333; width:100%; height:100%; display:flex; align-items:center; justify-content:center;">🥊</div>`;
+    }
+
+    function stopConfetti() {
+        if (confettiAnimationId) {
+            cancelAnimationFrame(confettiAnimationId);
+            confettiAnimationId = null;
+        }
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function launchConfetti() {
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        const pieces = [];
+        const numberOfPieces = 100;
+        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800'];
+
+        for (let i = 0; i < numberOfPieces; i++) {
+            pieces.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                rotation: Math.random() * 360,
+                size: Math.random() * 8 + 4,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                speedY: Math.random() * 3 + 2,
+                speedX: Math.random() * 2 - 1,
+                rotationSpeed: Math.random() * 6 - 3
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            pieces.forEach(p => {
+                ctx.save();
+                ctx.fillStyle = p.color;
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rotation * Math.PI) / 180);
+                ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                ctx.restore();
+
+                p.y += p.speedY;
+                p.x += p.speedX;
+                p.rotation += p.rotationSpeed;
+
+                if (p.y > canvas.height) {
+                    p.y = -20;
+                    p.x = Math.random() * canvas.width;
+                }
+            });
+
+            confettiAnimationId = requestAnimationFrame(draw);
+        }
+
+        draw();
+    }
+
+    function clearPreviousSequence() {
+        sequenceTimeouts.forEach(t => clearTimeout(t));
+        sequenceTimeouts = [];
+        stopConfetti();
+    }
+
+    function startFight() {
+        const name1 = document.getElementById('p1-name').value.trim();
+        const name2 = document.getElementById('p2-name').value.trim();
+
+        if (!name1 || !name2) {
+            alert('Please enter names for both fighters!');
+            return;
+        }
+
+        clearPreviousSequence();
+
+        document.getElementById('result-container').style.display = 'none';
+        document.getElementById('winner-announcement').innerText = '';
+        document.getElementById('status-timer').innerText = '';
+        document.getElementById('loader').style.display = 'block';
+
+        const winnerNum = aiPickWinner(name1, name2);
+        const winnerName = winnerNum === 1 ? name1 : name2;
+        const winnerImg = winnerNum === 1 ? p1ImageData : p2ImageData;
+        const loserImg = winnerNum === 1 ? p2ImageData : p1ImageData;
+
+        setTimeout(() => {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('result-container').style.display = 'block';
+
+            // ==========================================
+            // STAGE 1: CHOKE SCENE (0s -> 17s)
+            // ==========================================
+            document.getElementById('bg-scene').src = 'images/choke.png';
+
+            const winnerHead = document.getElementById('winner-head');
+            const loserHead = document.getElementById('loser-head');
+
+            winnerHead.className = 'head-overlay choke-winner';
+            winnerHead.innerHTML = renderFaceHTML(winnerImg);
+
+            loserHead.className = 'head-overlay choke-loser';
+            loserHead.innerHTML = renderFaceHTML(loserImg);
+
+            document.getElementById('status-timer').innerText = '🔥 Fight ongoing...';
+            playSound('sounds/winner.mp3');
+
+            // ==========================================
+            // STAGE 2: DECISION 1 SCENE (At 17 seconds)
+            // ==========================================
+            let t1 = setTimeout(() => {
+                document.getElementById('bg-scene').src = 'images/decision1.png';
+
+                winnerHead.className = 'head-overlay dec1-winner';
+                loserHead.className = 'head-overlay dec1-loser';
+
+                document.getElementById('status-timer').innerText = '⚖️ Awaiting official decision (15s)...';
+                playSound('sounds/decision.mp3');
+            }, 17000);
+            sequenceTimeouts.push(t1);
+
+            // ==========================================
+            // STAGE 3: DECISION 2 SCENE (32s total)
+            // ==========================================
+            let t2 = setTimeout(() => {
+                document.getElementById('bg-scene').src = 'images/decision2.png';
+
+                winnerHead.className = 'head-overlay dec2-winner';
+                loserHead.className = 'head-overlay dec2-loser';
+
+                document.getElementById('status-timer').innerText = '';
+                document.getElementById('winner-announcement').innerText = `🏆 AND NEW... Winner by Unanimous Decision: ${winnerName}!`;
+
+                // Launch Confetti & Victory Visual Effects
+                launchConfetti();
+            }, 32000);
+            sequenceTimeouts.push(t2);
+
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
