@@ -316,7 +316,7 @@
 
     <!-- Arena Display Area -->
     <div class="result-container" id="result-container">
-        <img src="choke.png" id="bg-scene" alt="Fight Stage" class="bg-image">
+        <img src="./choke.png" id="bg-scene" alt="Fight Stage" class="bg-image">
 
         <!-- Dynamic Winner Overlay -->
         <div class="head-overlay" id="winner-head"></div>
@@ -486,7 +486,7 @@
             // ==========================================
             // STAGE 1: CHOKE SCENE (0s -> 17s)
             // ==========================================
-            document.getElementById('bg-scene').src = 'choke.png';
+            document.getElementById('bg-scene').src = './choke.png';
 
             const winnerHead = document.getElementById('winner-head');
             const loserHead = document.getElementById('loser-head');
@@ -498,19 +498,19 @@
             loserHead.innerHTML = renderFaceHTML(loserImg);
 
             document.getElementById('status-timer').innerText = '🔥 Fight ongoing...';
-            playSound('winner.mp3');
+            playSound('./winner.mp3');
 
             // ==========================================
             // STAGE 2: DECISION 1 SCENE (At 17 seconds)
             // ==========================================
             let t1 = setTimeout(() => {
-                document.getElementById('bg-scene').src = 'decision1.png';
+                document.getElementById('bg-scene').src = './decision1.png';
 
                 winnerHead.className = 'head-overlay dec1-winner';
-                loserHead.className = 'head-overlay dec1-loser';
+                winnerHead.innerHTML = renderFaceHTML(winnerImg);
 
                 document.getElementById('status-timer').innerText = '⚖️ Awaiting official decision (15s)...';
-                playSound('decision.mp3');
+                playSound('./decision.mp3');
             }, 17000);
             sequenceTimeouts.push(t1);
 
@@ -518,7 +518,7 @@
             // STAGE 3: DECISION 2 SCENE (32s total)
             // ==========================================
             let t2 = setTimeout(() => {
-                document.getElementById('bg-scene').src = 'decision2.png';
+                document.getElementById('bg-scene').src = './decision2.png';
 
                 winnerHead.className = 'head-overlay dec2-winner';
                 loserHead.className = 'head-overlay dec2-loser';
