@@ -202,9 +202,7 @@
             border-radius: 50%;
         }
 
-        /* -------------------------------------------------------------
-           STAGE 1: CHOKE SCENE OVERLAYS
-           ------------------------------------------------------------- */
+        /* STAGE 1: CHOKE SCENE OVERLAYS */
         .choke-winner {
             top: 20%;
             left: 5.5%;
@@ -221,9 +219,7 @@
             transform: rotate(-18deg);
         }
 
-        /* -------------------------------------------------------------
-           STAGE 2: DECISION 1 OVERLAYS (Referee Holding Hands)
-           ------------------------------------------------------------- */
+        /* STAGE 2: DECISION 1 OVERLAYS */
         .dec1-winner {
             top: 16%;
             left: 12.5%;
@@ -240,10 +236,7 @@
             transform: rotate(-2deg);
         }
 
-        /* -------------------------------------------------------------
-           STAGE 3: DECISION 2 OVERLAYS (Winner Hand Raised)
-           ------------------------------------------------------------- */
-        /* Winner (Moved a little down and a little left) */
+        /* STAGE 3: DECISION 2 OVERLAYS */
         .dec2-winner {
             top: 26%;
             left: 16.5%;
@@ -253,7 +246,6 @@
             animation: winnerGlow 1.5s infinite alternate;
         }
 
-        /* Loser */
         .dec2-loser {
             top: 33%;
             left: 86.5%;
@@ -262,7 +254,6 @@
             transform: rotate(-38deg);
         }
 
-        /* Winner Pulse Glow Effect on Decision 2 */
         @keyframes winnerGlow {
             0% { box-shadow: 0 0 10px rgba(0, 255, 136, 0.4); }
             100% { box-shadow: 0 0 25px rgba(0, 255, 136, 0.9); }
@@ -319,15 +310,12 @@
 
     <!-- Arena Display Area -->
     <div class="result-container" id="result-container">
-        <img src="images/choke.png" id="bg-scene" alt="Fight Stage" class="bg-image">
+        <!-- Flat file reference -->
+        <img src="choke.png" id="bg-scene" alt="Fight Stage" class="bg-image">
 
-        <!-- Dynamic Winner Overlay -->
         <div class="head-overlay" id="winner-head"></div>
-
-        <!-- Dynamic Loser Overlay -->
         <div class="head-overlay" id="loser-head"></div>
 
-        <!-- Confetti Canvas -->
         <canvas id="confetti-canvas"></canvas>
     </div>
 
@@ -361,7 +349,6 @@
         }
     }
 
-    /* AI Decision Engine */
     function aiPickWinner(name1, name2) {
         const analyze = (str) => {
             let score = 0;
@@ -486,10 +473,8 @@
             document.getElementById('loader').style.display = 'none';
             document.getElementById('result-container').style.display = 'block';
 
-            // ==========================================
-            // STAGE 1: CHOKE SCENE (0s -> 17s)
-            // ==========================================
-            document.getElementById('bg-scene').src = 'images/choke.png';
+            // Flat file references without folders
+            document.getElementById('bg-scene').src = 'choke.png';
 
             const winnerHead = document.getElementById('winner-head');
             const loserHead = document.getElementById('loser-head');
@@ -501,27 +486,21 @@
             loserHead.innerHTML = renderFaceHTML(loserImg);
 
             document.getElementById('status-timer').innerText = '🔥 Fight ongoing...';
-            playSound('sounds/winner.mp3');
+            playSound('winner.mp3');
 
-            // ==========================================
-            // STAGE 2: DECISION 1 SCENE (At 17 seconds)
-            // ==========================================
             let t1 = setTimeout(() => {
-                document.getElementById('bg-scene').src = 'images/decision1.png';
+                document.getElementById('bg-scene').src = 'decision1.png';
 
                 winnerHead.className = 'head-overlay dec1-winner';
                 loserHead.className = 'head-overlay dec1-loser';
 
                 document.getElementById('status-timer').innerText = '⚖️ Awaiting official decision (15s)...';
-                playSound('sounds/decision.mp3');
+                playSound('decision.mp3');
             }, 17000);
             sequenceTimeouts.push(t1);
 
-            // ==========================================
-            // STAGE 3: DECISION 2 SCENE (32s total)
-            // ==========================================
             let t2 = setTimeout(() => {
-                document.getElementById('bg-scene').src = 'images/decision2.png';
+                document.getElementById('bg-scene').src = 'decision2.png';
 
                 winnerHead.className = 'head-overlay dec2-winner';
                 loserHead.className = 'head-overlay dec2-loser';
@@ -529,7 +508,6 @@
                 document.getElementById('status-timer').innerText = '';
                 document.getElementById('winner-announcement').innerText = `🏆 AND NEW... Winner by Unanimous Decision: ${winnerName}!`;
 
-                // Launch Confetti & Victory Visual Effects
                 launchConfetti();
             }, 32000);
             sequenceTimeouts.push(t2);
